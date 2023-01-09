@@ -2,12 +2,11 @@ from datetime import datetime
 from calendar import isleap
 
 import time
-import sched
 import threading
 
 
 class ProgressYear:
-    """Class that shows the percentage past of the given date in the year. By default calculates today's percentage.
+    """Class that shows the percentage of time passed in the year. By default calculates today's percentage.
     A custom datetime object may be passed for calculation.
 
     No instantiation is necessary to use the class methods - call directly from class.
@@ -64,7 +63,10 @@ class ProgressYearServer:
 
     The class spawns a non-blocking separate thread for updating values, and the user can call its public methods
     at any time to retrieve values. Attempting to call its internal update function will enter an endless blocking
-    loop."""
+    loop.
+
+    By default updates every 60 seconds, but a custom update interval in seconds may be passed through the constructor
+    """
 
     def __init__(self, update_interval=60):
         # Initialize variables
@@ -72,12 +74,8 @@ class ProgressYearServer:
         self.hour_progress = ProgressYear.get_hour_resolution()
         self.minute_progress = ProgressYear.get_minute_resolution()
 
-        # Create a new scheduler and schedule the _update function every "interval" seconds
-        self._scheduler = sched.scheduler(time.time, time.sleep)
-        self._scheduler.enter(update_interval, 1, self._update, argument=(update_interval,))
-
-        # Run the scheduler in a separate thread
-        self._thread = threading.Thread(target=self._scheduler.run)
+        # Run the update function in a separate thread
+        self._thread = threading.Thread(target=self._update, args=(update_interval, ))
         self._thread.daemon = True
         self._thread.start()
 
@@ -97,17 +95,3 @@ class ProgressYearServer:
 
     def get_minute_resolution(self):
         return self.minute_progress
-
-
-# Testing
-if __name__ == "__main__":
-    # print(ProgressYear.get_day_resolution())
-    # print(ProgressYear.get_hour_resolution())
-    # print(ProgressYear.get_minute_resolution())
-    k = ProgressYearServer()
-    # static = datetime.now()
-    while True:
-        print(f"Server class: {k.get_minute_resolution()*100}")
-        print(f"Static class: {ProgressYear.get_minute_resolution()*100}")
-        print(" --- --- --- ")
-        time.sleep(30)
