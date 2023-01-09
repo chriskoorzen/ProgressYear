@@ -35,6 +35,10 @@ ProgressYear.get_minute_resolution(custom_date)
 # returns 0.7942560882800608  -> 79.425 %
 ```
 
+The percentage returned is only calculated on time *passed*. In the example above, the 
+`get_day_resolution` method does not count the 17th itself, since *it's not 
+yet over.* 
+
 ## Experimental usage
 The ProgressYearServer class is an experimental class meant for long-running,
 request-heavy applications. It saves the values in memory instead of 
@@ -58,6 +62,9 @@ progress.get_day_resolution()
 progress.get_hour_resolution()
 progress.get_minute_resolution()
 ```
+
+This class does not handle complex scenarios, catch errors, or have been tested in 
+strenuous environments. As such it must be considered incomplete and be used with caution.
 
 
 ## Limitations
