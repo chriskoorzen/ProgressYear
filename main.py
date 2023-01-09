@@ -1,57 +1,50 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from calendar import isleap
 
 
-def total_days(year):
-    return 365 + isleap(year)
+class ProgressYear:
 
+    @staticmethod
+    def _total_days(year):
+        return 365 + isleap(year)
 
-def total_hours(year):
-    return total_days(year) * 24
+    @staticmethod
+    def _total_hours(year):
+        return ProgressYear._total_days(year) * 24
 
+    @staticmethod
+    def _total_minutes(year):
+        return ProgressYear._total_hours(year) * 60
 
-def total_minutes(year):
-    return total_hours(year) * 60
+    @staticmethod
+    def _get_diff(date: datetime):
+        date = date.replace(tzinfo=None)
+        this_year = date.year
+        year_start = datetime(this_year, 1, 1)
+        diff = date - year_start
+        return diff, this_year
 
+    @classmethod
+    def get_day_resolution(cls, date: datetime = datetime.now()):
+        diff, this_year = cls._get_diff(date)
+        days = diff.days
+        return days / cls._total_days(this_year)
 
-def get_day_resolution():
-    today = datetime.now(timezone.utc)
-    this_year = today.year
-    year_start = datetime(this_year, 1, 1, tzinfo=timezone.utc)
-    diff = today - year_start
+    @classmethod
+    def get_hour_resolution(cls, date: datetime = datetime.now()):
+        diff, this_year = cls._get_diff(date)
+        hours = diff.seconds // 3600
+        return (hours / cls._total_hours(this_year)) + cls.get_day_resolution(date)
 
-    days = diff.days
-    perc = days / total_days(this_year)
-    return perc
-
-
-def get_hour_resolution():
-    today = datetime.now(timezone.utc)
-    this_year = today.year
-    year_start = datetime(this_year, 1, 1, tzinfo=timezone.utc)
-    diff = today - year_start
-
-    hours = diff.seconds//3600
-    perc = hours / total_hours(this_year)
-    return perc
-
-
-def get_minute_resolution():
-    today = datetime.now(timezone.utc)
-    this_year = today.year
-    year_start = datetime(this_year, 1, 1, tzinfo=timezone.utc)
-    diff = today - year_start
-
-    minutes = (diff.seconds % 3600) // 60
-    perc = minutes / total_minutes(this_year)
-    return perc
+    @classmethod
+    def get_minute_resolution(cls, date: datetime = datetime.now()):
+        diff, this_year = cls._get_diff(date)
+        minutes = (diff.seconds % 3600) // 60
+        return (minutes / cls._total_minutes(this_year)) + cls.get_hour_resolution(date)
 
 
 if __name__ == "__main__":
-    print(get_day_resolution())
-    print(get_hour_resolution())
-    print(get_minute_resolution())
+    print(ProgressYear.get_day_resolution())
+    print(ProgressYear.get_hour_resolution())
+    print(ProgressYear.get_minute_resolution())
 
-    print(f"{get_day_resolution() * 100:.3f} % days have passed")
-    print(f"{(get_day_resolution() + get_hour_resolution()) * 100:.3f} % hours have passed")
-    print(f"{(get_day_resolution() + get_hour_resolution() + get_minute_resolution()) * 100:.3f} % minutes have passed")
